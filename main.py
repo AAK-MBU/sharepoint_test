@@ -5,6 +5,7 @@ This is the main entry point for the process
 import asyncio
 import logging
 import sys
+import os
 
 from automation_server_client import AutomationServer, Workqueue
 from mbu_rpa_core.exceptions import BusinessError, ProcessError
@@ -16,6 +17,32 @@ from processes.error_handling import ErrorContext, handle_error
 from processes.finalize_process import finalize_process
 from processes.process_item import process_item
 from processes.queue_handler import concurrent_add, retrieve_items_for_queue
+
+from mbu_dev_shared_components.msoffice365.sharepoint_api.files import Sharepoint
+
+from office365.sharepoint.client_context import ClientContext
+
+
+site_url = 'https://aarhuskommune.sharepoint.com'
+modersmaal_site_url = 'https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning'
+
+cert_settings = {
+    'client_id': os.getenv("CLIENT_ID"),
+    'thumbprint': os.getenv("APPREG_THUMBPRINT"),
+    'cert_path': os.getenv("GRAPH_CERT_PUBLIC")
+}
+
+ctx = ClientContext(site_url).with_client_certificate('contoso.onmicrosoft.com', **cert_settings)
+
+current_web = ctx.web
+ctx.load(current_web)
+ctx.execute_query()
+print("{0}".format(current_web.url))
+
+
+
+sys.exit()
+
 
 
 async def populate_queue(workqueue: Workqueue):

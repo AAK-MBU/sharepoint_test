@@ -5,10 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "automation-server-client @ git+https://github.com/odense-rpa/automation-server-client.git",
-    "mbu-dev-shared-components>=3.0.0",
-    "mbu-rpa-core",
-    "pillow",
+  "automation-server-client @ git+https://github.com/odense-rpa/automation-server-client.git",
+  "mbu-dev-shared-components>=3.0.0",
+  "mbu-rpa-core",
+  "pillow",
+  "openpyxl >= 3.1.2",
+  "pandas >= 2.2.3",
+  "office365-rest-python-client",
 ]
 
 [tool.uv.sources]

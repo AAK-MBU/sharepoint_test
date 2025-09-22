@@ -26,11 +26,24 @@ from office365.sharepoint.client_context import ClientContext
 site_url = 'https://aarhuskommune.sharepoint.com'
 modersmaal_site_url = 'https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning'
 
+client_id = os.getenv("CLIENT_ID")
+thumbprint = os.getenv("APPREG_THUMBPRINT")
+cert_path = os.getenv("GRAPH_CERT_PUBLIC")
+
 cert_settings = {
-    'client_id': os.getenv("CLIENT_ID"),
-    'thumbprint': os.getenv("APPREG_THUMBPRINT"),
-    'cert_path': os.getenv("GRAPH_CERT_PUBLIC")
+    'client_id': client_id,
+    'thumbprint': thumbprint,
+    'cert_path': cert_path
 }
+
+print(f"client_id: {client_id}")
+print(f"thumbprint: {thumbprint}")
+print(f"cert_path: {cert_path}")
+
+print("opening .cert file:")
+with open(cert_settings["cert_path"], "r", encoding="utf8") as f:
+    print(f.read())
+
 
 ctx = ClientContext(site_url).with_client_certificate('contoso.onmicrosoft.com', **cert_settings)
 

@@ -23,151 +23,29 @@ from mbu_dev_shared_components.msoffice365.sharepoint_api.files import Sharepoin
 from office365.sharepoint.client_context import ClientContext
 
 
-site_url = 'https://aarhuskommune.sharepoint.com'
-modersmaal_site_url = 'https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning'
+logger = logging.getLogger(__name__)
 
-client_id = os.getenv("CLIENT_ID")
-thumbprint = os.getenv("APPREG_THUMBPRINT")
-cert_path = os.getenv("GRAPH_CERT_PUBLIC")
+def sharepoint_client(tenant: str, client_id: str, thumbprint: str, cert_path: str, sharepoint_site_url: str) -> ClientContext:
+    """
+    Creates and returns a SharePoint client context.
+    """
+    # Authenticate to SharePoint
+    cert_credentials = {
+        "tenant": tenant,
+        "client_id": client_id,
+        "thumbprint": thumbprint,
+        "cert_path": cert_path
+    }
 
-cert_settings = {
-    'client_id': client_id,
-    'thumbprint': thumbprint,
-    'cert_path': cert_path
-}
+    ctx = ClientContext(sharepoint_site_url).with_client_certificate(**cert_credentials)
 
-print(f"client_id: {client_id}")
-print(f"thumbprint: {thumbprint}")
-print(f"cert_path: {cert_path}")
+    # Load and verify connection
+    web = ctx.web
+    ctx.load(web)
+    ctx.execute_query()
 
-print("opening .cert file:")
-with open(cert_settings["cert_path"], "r", encoding="utf8") as f:
-    print(f.read())
-
-
-ctx = ClientContext(site_url).with_client_certificate('contoso.onmicrosoft.com', **cert_settings)
-
-current_web = ctx.web
-ctx.load(current_web)
-ctx.execute_query()
-print("{0}".format(current_web.url))
-
-
-
-sys.exit()
-
-
-
-async def populate_queue(workqueue: Workqueue):
-    """Populate the workqueue with items to be processed."""
-
-    logger = logging.getLogger(__name__)
-    logger.info("Populating workqueue...")
-
-    items_to_queue = retrieve_items_for_queue(logger=logger)
-
-    queue_references = {str(r) for r in ats_functions.get_workqueue_items(workqueue)}
-
-    new_items: list[dict] = []
-    for item in items_to_queue:
-        reference = str(item.get("reference") or "")
-        if reference and reference in queue_references:
-            logger.info(
-                f"Reference: {reference} already in queue. Item: {item} not added"
-            )
-        else:
-            new_items.append(item)
-
-    await concurrent_add(workqueue, new_items, logger)
-    logger.info("Finished populating workqueue.")
-
-
-async def process_workqueue(workqueue: Workqueue):
-    """Process items from the workqueue."""
-
-    logger = logging.getLogger(__name__)
-    logger.info("Processing workqueue...")
-
-    startup(logger=logger)
-
-    error_count = 0
-
-    while error_count < config.MAX_RETRY:
-        for item in workqueue:
-            try:
-                with item:
-                    data, reference = ats_functions.get_item_info(item)
-
-                    try:
-                        logger.info(f"Processing item with reference: {reference}")
-                        process_item(data, reference)
-
-                        completed_state = CompletedState.completed(
-                            "Process completed without exceptions"
-                        )
-                        item.complete(str(completed_state))
-
-                        continue
-
-                    except BusinessError as e:
-                        context = ErrorContext(
-                            item=item,
-                            action=item.pending_user,
-                            send_mail=False,
-                            process_name=workqueue.name,
-                        )
-                        handle_error(
-                            error=e,
-                            log=logger.info,
-                            context=context,
-                        )
-
-                    except Exception as e:
-                        pe = ProcessError(str(e))
-                        raise pe from e
-
-            except ProcessError as e:
-                context = ErrorContext(
-                    item=item,
-                    action=item.fail,
-                    send_mail=True,
-                    process_name=workqueue.name,
-                )
-                handle_error(
-                    error=e,
-                    log=logger.error,
-                    context=context,
-                )
-                error_count += 1
-                reset(logger=logger)
-
-    logger.info("Finished processing workqueue.")
-    close(logger=logger)
-
-
-async def finalize(workqueue: Workqueue):
-    """Finalize process."""
-
-    logger = logging.getLogger(__name__)
-
-    logger.info("Finalizing process...")
-
-    try:
-        finalize_process()
-        logger.info("Finished finalizing process.")
-
-    except BusinessError as e:
-        handle_error(error=e, log=logger.info)
-
-    except Exception as e:
-        pe = ProcessError(str(e))
-        context = ErrorContext(
-            send_mail=True,
-            process_name=workqueue.name,
-        )
-        handle_error(error=pe, log=logger.error, context=context)
-
-        raise pe from e
+    logger.info(f"Authenticated successfully. Site Title: {web.properties['Title']}")
+    return ctx
 
 
 if __name__ == "__main__":
@@ -178,13 +56,13 @@ if __name__ == "__main__":
     prod_workqueue = ats.workqueue()
     process = ats.process
 
-    if "--queue" in sys.argv:
-        asyncio.run(populate_queue(prod_workqueue))
+    sharepoint_site_url = 'https://aarhuskommune.sharepoint.com'
+    modersmaal_sharepoint_site_url = 'https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning'
 
-    if "--process" in sys.argv:
-        asyncio.run(process_workqueue(prod_workqueue))
-
-    if "--finalize" in sys.argv:
-        asyncio.run(finalize(prod_workqueue))
+    tenant = os.getenv("TENANT")
+    client_id = os.getenv("CLIENT_ID")
+    thumbprint = os.getenv("APPREG_THUMBPRINT")
+    cert_path = os.getenv("GRAPH_CERT_PEM")
+    ctx = sharepoint_client(tenant, client_id, thumbprint, cert_path, sharepoint_site_url)
 
     sys.exit(0)

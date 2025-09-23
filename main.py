@@ -30,14 +30,14 @@ def sharepoint_client(tenant: str, client_id: str, thumbprint: str, cert_path: s
     Creates and returns a SharePoint client context.
     """
     # Authenticate to SharePoint
-    cert_credentials = {
-        "tenant": tenant,
-        "client_id": client_id,
-        "thumbprint": thumbprint,
-        "cert_path": cert_path
-    }
+    # cert_credentials = {
+    #     "tenant": tenant,
+    #     "client_id": client_id,
+    #     "thumbprint": thumbprint,
+    #     "cert_path": cert_path
+    # }
 
-    ctx = ClientContext(sharepoint_site_url).with_client_certificate(**cert_credentials)
+    ctx = ClientContext(sharepoint_site_url).with_client_certificate(tenant=tenant, client_id=client_id, thumbprint=thumbprint, cert_path=cert_path)
 
     # Load and verify connection
     web = ctx.web

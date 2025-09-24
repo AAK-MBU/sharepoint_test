@@ -18,35 +18,10 @@ from processes.finalize_process import finalize_process
 from processes.process_item import process_item
 from processes.queue_handler import concurrent_add, retrieve_items_for_queue
 
-from mbu_dev_shared_components.msoffice365.sharepoint_api.files import Sharepoint
-
-from office365.sharepoint.client_context import ClientContext
+from helpers.sharepoint_class import Sharepoint
 
 
 logger = logging.getLogger(__name__)
-
-
-def sharepoint_client(tenant: str, client_id: str, thumbprint: str, cert_path: str, sharepoint_site_url: str) -> ClientContext:
-    """
-    Creates and returns a SharePoint client context.
-    """
-    # Authenticate to SharePoint
-    # cert_credentials = {
-    #     "tenant": tenant,
-    #     "client_id": client_id,
-    #     "thumbprint": thumbprint,
-    #     "cert_path": cert_path
-    # }
-
-    ctx = ClientContext(sharepoint_site_url).with_client_certificate(tenant=tenant, client_id=client_id, thumbprint=thumbprint, cert_path=cert_path)
-
-    # Load and verify connection
-    web = ctx.web
-    ctx.load(web)
-    ctx.execute_query()
-
-    logger.info(f"Authenticated successfully. Site Title: {web.properties['Title']}")
-    return ctx
 
 
 if __name__ == "__main__":
@@ -71,17 +46,17 @@ if __name__ == "__main__":
     print(f"thumbprint: {thumbprint}")
     print(f"cert_path: {cert_path}")
 
-    ctx = sharepoint_client(tenant, client_id, thumbprint, cert_path, mbu_rpa_sharepoint_site_url)
+    sp = Sharepoint(
+        tenant=tenant,
+        client_id=client_id,
+        thumbprint=thumbprint,
+        cert_path=cert_path,
+        site_url="https://aarhuskommune.sharepoint.com",
+        site_name="MBURPA",
+        document_library="Dokumenter"   # or whatever your library is called
+    )
 
-    # Test: list files in a folder inside "Dokumenter" document library
-    folder_url = "/teams/MBURPA/Delte dokumenter/Automation_Server"   # adjust document library name if different
-    folder = ctx.web.get_folder_by_server_relative_url(folder_url)
-    files = folder.files
-    ctx.load(files)
-    ctx.execute_query()
-
-    print("\nFiles in MBURPA Dokumenter/Automation_Server:")
-    for f in files:
-        print(f.name)
+    files = sp.fetch_files_list("Automation_Server")
+    print(files)
 
     sys.exit(0)

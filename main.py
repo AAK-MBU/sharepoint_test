@@ -25,6 +25,7 @@ from office365.sharepoint.client_context import ClientContext
 
 logger = logging.getLogger(__name__)
 
+
 def sharepoint_client(tenant: str, client_id: str, thumbprint: str, cert_path: str, sharepoint_site_url: str) -> ClientContext:
     """
     Creates and returns a SharePoint client context.
@@ -63,7 +64,6 @@ if __name__ == "__main__":
     tenant = os.getenv("TENANT")
     client_id = os.getenv("CLIENT_ID")
     thumbprint = os.getenv("APPREG_THUMBPRINT")
-
     cert_path = os.getenv("GRAPH_CERT_PEM")
 
     print(f"tenant: {tenant}")
@@ -72,5 +72,16 @@ if __name__ == "__main__":
     print(f"cert_path: {cert_path}")
 
     ctx = sharepoint_client(tenant, client_id, thumbprint, cert_path, mbu_rpa_sharepoint_site_url)
+
+    # Test: list files in a folder inside "Dokumenter" document library
+    folder_url = "/teams/MBURPA/Delte dokumenter/Automation_Server"   # adjust document library name if different
+    folder = ctx.web.get_folder_by_server_relative_url(folder_url)
+    files = folder.files
+    ctx.load(files)
+    ctx.execute_query()
+
+    print("\nFiles in MBURPA Dokumenter/Automation_Server:")
+    for f in files:
+        print(f.name)
 
     sys.exit(0)

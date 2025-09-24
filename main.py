@@ -53,7 +53,7 @@ if __name__ == "__main__":
         cert_path=cert_path,
         site_url="https://aarhuskommune.sharepoint.com",
         site_name="MBURPA",
-        document_library="Dokumenter"   # or whatever your library is called
+        document_library="Delte dokumenter"   # or whatever your library is called
     )
 
     files = sp.fetch_files_list("Automation_Server")

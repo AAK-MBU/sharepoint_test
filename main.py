@@ -62,13 +62,15 @@ if __name__ == "__main__":
     tenant = os.getenv("TENANT")
     client_id = os.getenv("CLIENT_ID")
     thumbprint = os.getenv("APPREG_THUMBPRINT")
-    cert_path = os.getenv("GRAPH_CERT_PEM")
+
+    # cert_path = os.getenv("GRAPH_CERT_PEM")
+    cert_path = "/run/secrets/graph_client.pem"
 
     print(f"tenant: {tenant}")
     print(f"client_id: {client_id}")
     print(f"thumbprint: {thumbprint}")
     print(f"cert_path: {cert_path}")
 
-    ctx = sharepoint_client(tenant, client_id, thumbprint, cert_path, modersmaal_sharepoint_site_url)
+    ctx = sharepoint_client(tenant, client_id, thumbprint, cert_path, sharepoint_site_url)
 
     sys.exit(0)

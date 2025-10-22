@@ -64,7 +64,14 @@ class Sharepoint:
     """
 
     def __init__(
-            self,tenant: str,client_id: str,thumbprint: str,cert_path: str,site_url: str,site_name: str,document_library: str
+            self,
+            tenant: str,
+            client_id: str,
+            thumbprint: str,
+            cert_path: str,
+            site_url: str,
+            site_name: str,
+            document_library: str
     ):
         """Initializes the Sharepoint class with credentials and site details."""
         self.tenant = tenant

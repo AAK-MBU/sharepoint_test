@@ -32,31 +32,84 @@ if __name__ == "__main__":
     prod_workqueue = ats.workqueue()
     process = ats.process
 
-    sharepoint_site_url = 'https://aarhuskommune.sharepoint.com'
-    modersmaal_sharepoint_site_url = 'https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning'
-    mbu_rpa_sharepoint_site_url = "https://aarhuskommune.sharepoint.com/teams/MBURPA"
+    sites = [
+        {
+            "site_name": "MBURPA",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/MBURPA",
+        },
+
+
+        {
+            "site_name": "Teams-Modersmlsundervisning",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Teams-Modersmlsundervisning",
+        },
+
+
+        {
+            "site_name": "Personale-Saramarbejdsprojekter",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Personale-Saramarbejdsprojekter",
+        },
+        {
+            "site_name": "Personale-Saramarbejdsprojekter-Masseudsendelse",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Personale-Saramarbejdsprojekter-Masseudsendelse",
+        },
+        {
+            "site_name": "Personale-Saramarbejdsprojekter-SDLn",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Personale-Saramarbejdsprojekter-SDLn",
+        },
+
+
+        {
+            "site_name": "PPR-Samarbejdsprojekter",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/PPR-Samarbejdsprojekter",
+        },
+        {
+            "site_name": "PPR-Samarbejdsprojekter-CenterforTrivsel",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/PPR-Samarbejdsprojekter-CenterforTrivsel",
+        },
+
+
+        {
+            "site_name": "Tandplejen-Samarbejdsprojekter",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Tandplejen-Samarbejdsprojekter",
+        },
+        {
+            "site_name": "Tandplejen-Samarbejdsprojekter-TilflyttertilAarhusKommune",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Tandplejen-Samarbejdsprojekter-TilflyttertilAarhusKommune",
+        },
+        {
+            "site_name": "Tandplejen-Samarbejdsprojekter-Udskrivning22r",
+            "site_url": "https://aarhuskommune.sharepoint.com/teams/Tandplejen-Samarbejdsprojekter-Udskrivning22r",
+        },
+
+    ]
 
     tenant = os.getenv("TENANT")
     client_id = os.getenv("CLIENT_ID")
     thumbprint = os.getenv("APPREG_THUMBPRINT")
     cert_path = os.getenv("GRAPH_CERT_PEM")
 
-    print(f"tenant: {tenant}")
-    print(f"client_id: {client_id}")
-    print(f"thumbprint: {thumbprint}")
-    print(f"cert_path: {cert_path}")
+    logger.info(f"tenant: {tenant}")
+    logger.info(f"client_id: {client_id}")
+    logger.info(f"thumbprint: {thumbprint}")
+    logger.info(f"cert_path: {cert_path}")
 
-    sp = Sharepoint(
-        tenant=tenant,
-        client_id=client_id,
-        thumbprint=thumbprint,
-        cert_path=cert_path,
-        site_url="https://aarhuskommune.sharepoint.com",
-        site_name="MBURPA",
-        document_library="Delte dokumenter"   # or whatever your library is called
-    )
+    for site in sites:
+        logger.info(f"attempting to authenticate to {site}")
 
-    files = sp.fetch_files_list("Automation_Server")
-    print(files)
+        site_name = site.get("site_name")
+        site_url = site.get("site_url")
 
-    sys.exit(0)
+        try:
+            sp = Sharepoint(
+                tenant=tenant,
+                client_id=client_id,
+                thumbprint=thumbprint,
+                cert_path=cert_path,
+                site_url=site_url,
+                site_name=site_name,
+                document_library="Delte dokumenter"
+            )
+
+        except Exception as e:
+            logger.info(f"Error authenticating: {e}")

@@ -98,7 +98,7 @@ if __name__ == "__main__":
         logger.info(f"attempting to authenticate to {site}")
 
         site_name = site.get("site_name")
-        site_url = site.get("site_url")
+        site_url = "https://aarhuskommune.sharepoint.com"
 
         try:
             sp = Sharepoint(

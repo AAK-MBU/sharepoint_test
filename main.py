@@ -7,7 +7,6 @@ import os
 
 from helpers.sharepoint_class import Sharepoint
 
-
 logger = logging.getLogger(__name__)
 
 
